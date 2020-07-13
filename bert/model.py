@@ -30,21 +30,11 @@ class bertModel():
 
     def __init__(self, opts):
 
+        self.opts = opts
         self.bert = hub.KerasLayer(opts.model_loc, trainable=True)
 
-class bertTrainer():
-    def __init__(self, data, bert, opts):
-
-        self.opts = opts
-        self.data = data
-        self.bert = bert.bert
-
-    def initTrainer(self):
-
-        self.init_optimizer()
+        #build the model
         self.build_model()
-        if self.opts.print_model:
-            self.model.summary()
 
     def build_model(self):
 
@@ -57,6 +47,22 @@ class bertTrainer():
         out = Dense(self.opts.num_classes, activation='sigmoid')(clf_output)
 
         self.model = Model(inputs=[input_word_ids, input_mask, segment_ids], outputs=out)
+
+class bertTrainer():
+    def __init__(self, data, bert, opts):
+
+        self.opts = opts
+        self.data = data
+        self.bert = bert.bert
+        self.model = bert.model
+    def initTrainer(self):
+
+        self.init_optimizer()
+        self.build_model()
+        if self.opts.print_model:
+            self.model.summary()
+
+    def build_model(self):
 
         self.model.compile(self.optimizer, loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -75,7 +81,7 @@ class bertTrainer():
 
         self.initTrainer()
 
-        checkpoint = ModelCheckpoint('model.h5', monitor='val_loss', save_best_only=True)
+        checkpoint = ModelCheckpoint('1model.h5', monitor='val_loss', save_best_only=True)
 
         self.train_history = self.model.fit(
             self.data.train_input, self.data.y_train,
